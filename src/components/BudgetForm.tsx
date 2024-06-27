@@ -1,25 +1,28 @@
-import { useMemo, useState, Dispatch } from "react";
-import { BudgetActions } from "../reducers/budget-reducer";
-export type budgetProps = {
-  dispatch: Dispatch<BudgetActions>;
-};
-const BudgetForm = ({ dispatch }: budgetProps) => {
+import { useMemo, useState } from "react";
+import { UseBudget } from "../hooks/useBudget";
+const BudgetForm = () => {
   const [budget, setBudget] = useState(0);
-
+  const { state, dispatch } = UseBudget();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     setBudget(+e.target.value);
   };
 
+  const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch({ type: "add-budget", payload: { budget } });
+    setBudget(0)
+  };
   const isValid = useMemo(() => {
     return isNaN(budget) || budget <= 0;
   }, [budget]);
+
   return (
-    <form className="space-y-5">
+    <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="flex flex-col space-y-5">
         <label
           htmlFor="budget"
-          className="text-4xl text-blue-600 font-bold text-center"
+          className="text-4xl font-bold text-center text-blue-600"
         >
           Definir Presupuesto
         </label>
@@ -27,7 +30,7 @@ const BudgetForm = ({ dispatch }: budgetProps) => {
           id="budget"
           type="number"
           name="budget"
-          className="w-full bg-white border border-gray-200 p-2 rounded-lg"
+          className="w-full p-2 bg-white border border-gray-200 rounded-lg"
           placeholder="Define Tu presupuesto"
           value={budget}
           onChange={(e) => handleChange(e)}
@@ -36,11 +39,8 @@ const BudgetForm = ({ dispatch }: budgetProps) => {
       <input
         type="submit"
         value="Definir Presupuesto"
-        className="bg-blue-600 hover:bg-blue-700 cursor-pointer rounded-lg w-full p-2 text-white font-black uppercase disabled:bg-blue-600/60"
+        className="w-full p-2 font-black text-white uppercase bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700 disabled:bg-blue-600/60"
         disabled={isValid}
-        onClick={() =>
-          dispatch({ type: "add-budget", payload: { budget: budget } })
-        }
       />
     </form>
   );

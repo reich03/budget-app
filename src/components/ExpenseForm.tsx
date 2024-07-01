@@ -2,7 +2,7 @@ import DatePicker from "react-date-picker";
 import { categories } from "../data/categories";
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { DraftExpense, Value } from "../types";
 import ErrorMessage from "./ErrorMessage";
 import { UseBudget } from "../hooks/useBudget";
@@ -15,7 +15,7 @@ export default function ExpenseForm() {
     expenseDate: new Date(),
   });
   const [error, setError] = useState("");
-  const { dispatch } = UseBudget();
+  const { state, dispatch } = UseBudget();
 
   const handleChangeDate = (value: Value) => {
     setExpense({
@@ -24,6 +24,15 @@ export default function ExpenseForm() {
     });
   };
 
+  useEffect(() => {
+    if (state.editingId) {
+      const infoExpense = state.expenses.filter(
+        (currentExpense) => currentExpense.id === state.editingId)[0];
+        setExpense(infoExpense)
+    }
+  }, [state.editingId]);
+  //  const isEditing = useMemo(() => state.editingId==='', [state.editingId]);
+  // console.log(isEditing)
   const handleChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
@@ -72,7 +81,7 @@ export default function ExpenseForm() {
           placeholder="Ingrese nombre Gasto ejem: Ropa, comida"
           className="p-2 border rounded-md bg-slate-100 border-slate-200"
           name="expenseName"
-            value={expense.expenseName}
+          value={expense.expenseName}
           onChange={handleChange}
         />
       </div>
@@ -87,7 +96,7 @@ export default function ExpenseForm() {
           placeholder="Ingrese Cantidad Gasto ejem: 100, 200"
           className="p-2 border rounded-md bg-slate-100 border-slate-200"
           name="expenseAmount"
-            value={expense.expenseAmount}
+          value={expense.expenseAmount}
           onChange={handleChange}
         />
       </div>
@@ -100,7 +109,7 @@ export default function ExpenseForm() {
           id="category"
           name="category"
           className="p-2 border rounded-md bg-slate-100 border-slate-200"
-            value={expense.category}
+          value={expense.category}
           onChange={handleChange}
         >
           <option value="">-- Seleccione -- </option>

@@ -20,7 +20,7 @@ export default function ExpenseDetail({ expenseData }: ExpenseDetailProps) {
     () => categories.filter((cate) => cate.id === expenseData.category)[0],
     [expenseData]
   );
-  const { state, dispatch } = UseBudget();
+  const {dispatch } = UseBudget();
 
   //izquierda
   const leadingActions = () => (

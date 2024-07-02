@@ -15,8 +15,8 @@ export default function ExpenseForm() {
     expenseDate: new Date(),
   });
   const [error, setError] = useState("");
-  const { state, dispatch } = UseBudget();
-
+  const { state, dispatch, remainingBudget } = UseBudget();
+  const [previoAmount, setprevioAmount] = useState(0);
   const handleChangeDate = (value: Value) => {
     setExpense({
       ...expense,
@@ -27,11 +27,13 @@ export default function ExpenseForm() {
   useEffect(() => {
     if (state.editingId) {
       const infoExpense = state.expenses.filter(
-        (currentExpense) => currentExpense.id === state.editingId)[0];
-        setExpense(infoExpense)
+        (currentExpense) => currentExpense.id === state.editingId
+      )[0];
+      setExpense(infoExpense);
+      setprevioAmount(infoExpense.expenseAmount);
     }
   }, [state.editingId]);
-  //  const isEditing = useMemo(() => state.editingId==='', [state.editingId]);
+  const isEditing = useMemo(() => state.editingId === "", [state.editingId]);
   // console.log(isEditing)
   const handleChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
@@ -53,10 +55,26 @@ export default function ExpenseForm() {
       setError("Todos los campos son Obligatorios");
       return;
     }
-    dispatch({
-      type: "add-expenses",
-      payload: { expense },
-    });
+
+    if (expense.expenseAmount - previoAmount > remainingBudget) {
+      setError("No tienes fondos suficientes");
+
+      // console.log(
+      //   previoAmount - expense.expenseAmount > remainingBudget,
+      //   expense.expenseAmount,
+      //   previoAmount
+      // );
+      return;
+    }
+    isEditing
+      ? dispatch({
+          type: "add-expenses",
+          payload: { expense },
+        })
+      : dispatch({
+          type: "update-expense",
+          payload: { expense: { id: state.editingId, ...expense } },
+        });
     setExpense({
       expenseName: "",
       expenseAmount: 0,
@@ -68,7 +86,7 @@ export default function ExpenseForm() {
   return (
     <form className="space-y-5" onSubmit={(e) => handleSubmit(e)}>
       <legend className="py-2 text-2xl font-black text-center uppercase border-b-4 border-blue-500">
-        Nuevo Gasto
+        {!isEditing ? "Actualizar Gasto" : "Nuevo Gasto"}
       </legend>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       <div className="flex flex-col gap-2">
@@ -133,7 +151,7 @@ export default function ExpenseForm() {
       </div>
       <input
         type="submit"
-        value="Registrar Gasto"
+        value={!isEditing ? "Actualizar Gasto" : "Registrar Gasto"}
         className="w-full p-2 font-bold text-white bg-blue-600 rounded-lg cursor-pointer"
       />
     </form>

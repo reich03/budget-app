@@ -1,4 +1,4 @@
-import { DraftExpense, Expense } from "../types"
+import { Category, DraftExpense, Expense } from "../types"
 import { v4 as uuidv4 } from "uuid";
 
 
@@ -8,6 +8,8 @@ export type BudgetActions =
     { type: 'add-expenses', payload: { expense: DraftExpense } } |
     { type: 'delete-budget', payload: { id: string } } |
     { type: 'get-expense-id', payload: { id: string } } |
+    { type: 'update-expense', payload: { expense: Expense } } |
+    { type: 'add-filter-category', payload: { id: Category['id'] } } |
     { type: 'reset-expenses' }
 
 export type BudgetState = {
@@ -15,13 +17,25 @@ export type BudgetState = {
     modal: boolean
     expenses: Expense[]
     editingId: Expense['id']
+    currentCategory:Category['id']
 }
 
+const initialBudget = (): number => {
+
+    const localstorageBudget = localStorage.getItem('budget')
+    return localstorageBudget ? +localstorageBudget : 0
+}
+
+const localStorageExpenses = (): Expense[] => {
+    const localStorageExpense = localStorage.getItem('expenses')
+    return localStorageExpense ? JSON.parse(localStorageExpense) : []
+}
 export const initialState: BudgetState = {
-    budget: 0,
+    budget: initialBudget(),
     modal: false,
-    expenses: [],
-    editingId: ''
+    expenses: localStorageExpenses(),
+    editingId: '',
+    currentCategory:''
 }
 
 const CreateExpense = (expense: DraftExpense): Expense => {
@@ -45,7 +59,8 @@ export const budgetReducer = (
     if (action.type === 'state-modal') {
         return {
             ...state,
-            modal: !state.modal
+            modal: !state.modal,
+            editingId: ''
         }
     }
 
@@ -80,6 +95,22 @@ export const budgetReducer = (
             ...state,
             editingId: action.payload.id,
             modal: true
+        }
+    }
+
+    if (action.type === 'update-expense') {
+        return {
+            ...state,
+            editingId: '',
+            modal: false,
+            expenses: state.expenses.map((expense) => expense.id === action.payload.expense.id ? action.payload.expense : expense)
+        }
+    }
+
+    if (action.type === 'add-filter-category') {
+        return {
+            ...state,
+            currentCategory:action.payload.id
         }
     }
     return state

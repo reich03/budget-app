@@ -1,4 +1,4 @@
-import { useReducer, createContext, Dispatch, ReactNode } from "react";
+import { useReducer, createContext, Dispatch, ReactNode, useMemo } from "react";
 import {
   BudgetActions,
   BudgetState,
@@ -10,6 +10,8 @@ import {
 type BudgetContextProps = {
   state: BudgetState;
   dispatch: Dispatch<BudgetActions>;
+  totalExpenses: number;
+  remainingBudget: number;
 };
 
 // Tipos de nuestro Provider osea del children que le pasa la info
@@ -24,13 +26,27 @@ export const BudgetContext = createContext<BudgetContextProps>(
 // Crear el Provider, Lugar de donde vienen los datos
 export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   const [state, dispatch] = useReducer(budgetReducer, initialState);
+  const totalExpenses = useMemo(
+    () =>
+      state.expenses.reduce(
+        (total, expense) => +expense.expenseAmount + total,
+        0
+      ),
+    [state.expenses]
+  );
 
+  const remainingBudget = useMemo(
+    () => state.budget - totalExpenses,
+    [state.expenses]
+  );
   return (
     //Union entre el context que creamos y los valores states funciones o datos de nuestro provider
     <BudgetContext.Provider
       value={{
         state,
         dispatch,
+        totalExpenses,
+        remainingBudget,
       }}
     >
       {children}

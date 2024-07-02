@@ -37,7 +37,7 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
 
   const remainingBudget = useMemo(
     () => state.budget - totalExpenses,
-    [state.expenses]
+    [state]
   );
   return (
     //Union entre el context que creamos y los valores states funciones o datos de nuestro provider

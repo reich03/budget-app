@@ -55,6 +55,7 @@ export default function ExpenseForm() {
       setError("Todos los campos son Obligatorios");
       return;
     }
+    
 
     if (expense.expenseAmount - previoAmount > remainingBudget) {
       setError("No tienes fondos suficientes");
